@@ -12,19 +12,19 @@ namespace sorting {
     template <class RandomAccessIterator, class Compare>
     RandomAccessIterator partition(RandomAccessIterator low, RandomAccessIterator high, RandomAccessIterator pivot, Compare comp) {
         // Swap the pivot value to the highest index.
-        swap(*pivot, *high);
+        std::swap(*pivot, *high);
 
         auto left = low;
         for (auto right = low; right < high; ++right) {
             // Move values smaller than pivot to left, lerger to right.
             if (comp(*right, *high)) {
-                swap(*left, *right);
+                std::swap(*left, *right);
                 ++left;
             }
         }
 
         // Swap back the pivot into the boundary between small values and large values.
-        swap(*left, *high);
+        std::swap(*left, *high);
 
         // Return the position of the new pivot.
         return left;
