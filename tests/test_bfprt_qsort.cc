@@ -99,3 +99,10 @@ TEST_F(BfprtQsortTest, SortVectorInDescendingOrder_Sorted) {
     sorting::bfprtQsort(vec.begin(), vec.end(), std::greater<int>());
     ASSERT_THAT(vec, ElementsAre(17, 16, 15, 14, 13, 12, 11, 10));
 }
+
+TEST_F(BfprtQsortTest, SwapFirstAndLast_NoSideEffect) {
+    std::vector<int> vec{15, 13, 16, 10, 11, 17, 14, 12};
+
+    sorting::bfprtQsort(vec.end(), vec.begin(), std::less<int>());
+    ASSERT_THAT(vec, ElementsAre(15, 13, 16, 10, 11, 17, 14, 12));
+}
