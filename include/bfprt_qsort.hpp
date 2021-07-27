@@ -3,17 +3,17 @@
 
 #include <stack>
 
-namespace sort {
+namespace sorting {
     template <class RandomAccessIterator, class Compare>
-    bfprtQsort(RandomAccessIterator first, RandomAccessIterator last, Compare comp) {
-       std::stack low_stack, high_stack;
+    void bfprtQsort(RandomAccessIterator first, RandomAccessIterator last, Compare comp) {
+        std::stack<RandomAccessIterator> low_stack, high_stack;
 
-       low_stack.push(first);
-       high_stack.push(last - 1);
+        low_stack.push(first);
+        high_stack.push(last - 1);
 
-       while (!low_stack.is_empty() && !high_stack.is_empty()) {
-           break;
-       }
+        while (!low_stack.empty() && !high_stack.empty()) {
+            break;
+        }
     }
 }
 
