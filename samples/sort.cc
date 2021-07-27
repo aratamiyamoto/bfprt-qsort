@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
     lines.push_back(line);
   }
 
-  sorting::bfprtQsort(lines.begin(), lines.end(), std::greater<std::string>());
+  sorting::bfprtQsort(lines.begin(), lines.end(), std::less<std::string>());
 
   for (auto &line : lines) {
     std::cout << line << std::endl;
