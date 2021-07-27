@@ -6,4 +6,3 @@ services:
     container_name: bfprt-qsort-container
     volumes:
       - .:/root/bfprt-qsort
-  
