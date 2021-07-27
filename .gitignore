@@ -31,11 +31,8 @@
 *.out
 *.app
 
-# CMake artifacts
-CMakeCache.txt
-CMakeFiles/
-Makefile
-cmake_install.cmake
+# CMake build directory
+build/
 
 # VIM swap files
 *.sw*
