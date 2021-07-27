@@ -1,0 +1,9 @@
+version: '3'
+services:
+  bfprt_qsort:
+    build: .
+    image: bfprt-qsort
+    container_name: bfprt-qsort-container
+    volumes:
+      - ..:/root/bfprt-qsort
+  

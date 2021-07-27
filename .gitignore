@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+# CMake artifacts
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+
+# VIM swap files
+*.sw*
