@@ -32,6 +32,11 @@ namespace sorting {
 
     template <class RandomAccessIterator, class Compare>
     void bfprtQsort(RandomAccessIterator first, RandomAccessIterator last, Compare comp) {
+        if (first >= last) {
+            // Trapped here if the given array is empty.
+            return;
+        }
+
         std::stack<RandomAccessIterator> low_stack, high_stack;
 
         low_stack.push(first);
@@ -43,6 +48,8 @@ namespace sorting {
             low_stack.pop();
             high_stack.pop();
 
+            // In a single iteration, move the smaller half elements in the array between low and high to the left, and
+            // the larger half elements to the right.
             if (low < high) {
                 const auto n = std::distance(low, high) + 1;
                 const auto med = kth_smallest(low, high, n / 2, comp);

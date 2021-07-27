@@ -65,6 +65,13 @@ TEST_F(BfprtQsortTest, SortVectorWithNonUniqueValues_Sorted) {
     ASSERT_THAT(vec, ElementsAre(10, 10, 11, 11, 12, 12, 13, 13));
 }
 
+TEST_F(BfprtQsortTest, SortUniformVectorExceptForOneElement_Sorted) {
+    std::vector<int> vec{11, 10, 10, 10, 10, 10, 10, 10};
+
+    sorting::bfprtQsort(vec.begin(), vec.end(), std::less<int>());
+    ASSERT_THAT(vec, ElementsAre(10, 10, 10, 10, 10, 10, 10, 11));
+}
+
 TEST_F(BfprtQsortTest, SortUniformVector_Sorted) {
     std::vector<int> vec{10, 10, 10, 10, 10, 10, 10, 10};
 
@@ -90,5 +97,5 @@ TEST_F(BfprtQsortTest, SortVectorInDescendingOrder_Sorted) {
     std::vector<int> vec{15, 13, 16, 10, 11, 17, 14, 12};
 
     sorting::bfprtQsort(vec.begin(), vec.end(), std::greater<int>());
-    ASSERT_THAT(vec, ElementsAre(10, 11, 12, 13, 14, 15, 16, 17));
+    ASSERT_THAT(vec, ElementsAre(17, 16, 15, 14, 13, 12, 11, 10));
 }
