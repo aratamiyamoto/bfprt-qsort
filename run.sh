@@ -25,6 +25,7 @@ elif [ ${CMD} == "profile" ]; then
     CONTAINER_CMD=" \
         mkdir -p build/ && \
         cmake -S . -B build/ && \
+        make -C build/ && \
         build/samples/profile"
 elif [ ${CMD} == "test" ]; then
     2>&1 echo "Not implemented."

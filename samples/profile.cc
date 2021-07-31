@@ -24,32 +24,6 @@ class RandomInitializer {
   }
 };
 
-class AscendingInitializer {
- public:
-  template<typename RandomAccessIterator>
-  void operator()(RandomAccessIterator first, RandomAccessIterator last) {
-    int count = 0;
-    std::generate(first, last, [&count]{ return count++; });
-  }
-
-  std::string getName() const {
-    return "ascending";
-  }
-};
-
-class DescendingInitializer {
- public:
-  template<typename RandomAccessIterator>
-  void operator()(RandomAccessIterator first, RandomAccessIterator last) {
-    int count = std::distance(first, last);
-    std::generate(first, last, [&count]{ return count--; });
-  }
-
-  std::string getName() const {
-    return "descending";
-  }
-};
-
 class LibcQsort {
  public:
   template<typename RandomAccessIterator>
@@ -60,6 +34,20 @@ class LibcQsort {
 
   std::string getName() const {
     return "libc_qsort";
+  }
+};
+
+class BfprtQsort {
+ public:
+  template<typename RandomAccessIterator>
+  void operator()(RandomAccessIterator first, RandomAccessIterator last) {
+    int num = std::distance(first, last);
+    using ElemType = typename std::iterator_traits<RandomAccessIterator>::value_type;
+    sorting::bfprtQsort(first, last, std::less<ElemType>());
+  }
+
+  std::string getName() const {
+    return "bfprt_qsort";
   }
 };
 
@@ -81,7 +69,7 @@ void profile(ArrayInitializer initializer, ArraySorter sorter, const int array_s
   }
 
   decltype(elapsed_times)::value_type average_elapsed = std::accumulate(elapsed_times.begin(), elapsed_times.end(), 0.0) / elapsed_times.size();
-  std::cout << "[" << initializer.getName() << ", " << sorter.getName() << ", " << iterations << " iterations]: average=" << average_elapsed << "[ms]" << std::endl;
+  std::cout << "[" << initializer.getName() << ", " << sorter.getName() << ", " << iterations << " iterations, " << array_size << " elements]: average=" << average_elapsed << "[ms]" << std::endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -89,8 +77,10 @@ int main(int argc, char *argv[]) {
   profile(RandomInitializer(), LibcQsort(), 1000);
   profile(RandomInitializer(), LibcQsort(), 10000);
   profile(RandomInitializer(), LibcQsort(), 100000);
-  profile(AscendingInitializer(), LibcQsort(), 100000);
-  profile(DescendingInitializer(), LibcQsort(), 100000);
+  profile(RandomInitializer(), BfprtQsort(), 100);
+  profile(RandomInitializer(), BfprtQsort(), 1000);
+  profile(RandomInitializer(), BfprtQsort(), 10000);
+  profile(RandomInitializer(), BfprtQsort(), 100000);
 
   return 0;
 }
