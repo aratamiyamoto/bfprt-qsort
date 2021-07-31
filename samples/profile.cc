@@ -44,20 +44,24 @@ QuicksortKillerCompare<int> gQuicksortKillerCompare;
 
 class NativeQsort {
  public:
-  enum COMPARE_TYPE {
+  enum CompareType {
     LESS,
     QUICKSORT_KILLER
   };
 
   template<typename RandomAccessIterator, typename Compare = std::less<typename std::iterator_traits<RandomAccessIterator>::value_type> >
-  void operator()(RandomAccessIterator first, RandomAccessIterator last, COMPARE_TYPE compare_type = COMPARE_TYPE::LESS) {
+  void operator()(RandomAccessIterator first, RandomAccessIterator last, CompareType compare_type = CompareType::LESS) {
     int num = std::distance(first, last);
 
-    if (compare_type == COMPARE_TYPE::LESS) {
+    if (compare_type == CompareType::LESS) {
       qsort(&(*first), num, sizeof(int), [](const void *a, const void *b){ return *reinterpret_cast<const int*>(a) - *reinterpret_cast<const int*>(b); });
-    } else if (compare_type == COMPARE_TYPE::QUICKSORT_KILLER) {
+    } else if (compare_type == CompareType::QUICKSORT_KILLER) {
       gQuicksortKillerCompare = decltype(gQuicksortKillerCompare)();  // Reset maps populated by the last run.
-      qsort(&(*first), num, sizeof(int), [](const void *a, const void *b){ return gQuicksortKillerCompare(*reinterpret_cast<const int*>(a), *reinterpret_cast<const int*>(b)); });
+      qsort(&(*first), num, sizeof(int), [](const void *a, const void *b) {
+        const auto x = *reinterpret_cast<const int*>(a);
+        const auto y = *reinterpret_cast<const int*>(b);
+        return static_cast<int>(gQuicksortKillerCompare(x, y)) - static_cast<int>(gQuicksortKillerCompare(y, x));
+         });
     } else {
       abort();
     }
@@ -108,7 +112,7 @@ class QuicksortKillerInitializer {
   void operator()(RandomAccessIterator first, RandomAccessIterator last, NativeQsort sorter) {
     std::iota(first, last, 0);
     using ElemType = typename std::iterator_traits<RandomAccessIterator>::value_type;
-    sorter(first, last, NativeQsort::COMPARE_TYPE::QUICKSORT_KILLER);
+    sorter(first, last, NativeQsort::CompareType::QUICKSORT_KILLER);
   }
 
   std::string getName() const {
@@ -150,14 +154,22 @@ int main(int argc, char *argv[]) {
   profile(QuicksortKillerInitializer(), NativeQsort(), 10000);
   profile(QuicksortKillerInitializer(), NativeQsort(), 100000);
   */
+  profile(RandomInitializer(), NativeQsort(), 100);
+  profile(RandomInitializer(), NativeQsort(), 1000);
+  profile(RandomInitializer(), NativeQsort(), 10000);
+//  profile(RandomInitializer(), NativeQsort(), 100000);
+  profile(QuicksortKillerInitializer(), NativeQsort(), 100);
+  profile(QuicksortKillerInitializer(), NativeQsort(), 1000);
+  profile(QuicksortKillerInitializer(), NativeQsort(), 10000);
+//  profile(QuicksortKillerInitializer(), NativeQsort(), 100000);
   profile(RandomInitializer(), BfprtQsort(), 100);
   profile(RandomInitializer(), BfprtQsort(), 1000);
   profile(RandomInitializer(), BfprtQsort(), 10000);
-  profile(RandomInitializer(), BfprtQsort(), 100000);
+//  profile(RandomInitializer(), BfprtQsort(), 100000);
   profile(QuicksortKillerInitializer(), BfprtQsort(), 100);
   profile(QuicksortKillerInitializer(), BfprtQsort(), 1000);
   profile(QuicksortKillerInitializer(), BfprtQsort(), 10000);
-  profile(QuicksortKillerInitializer(), BfprtQsort(), 100000);
+//  profile(QuicksortKillerInitializer(), BfprtQsort(), 100000);
 
   return 0;
 }
