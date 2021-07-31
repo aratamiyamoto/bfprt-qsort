@@ -42,7 +42,7 @@ class QuicksortKillerCompare {
 
 QuicksortKillerCompare<int> gQuicksortKillerCompare;
 
-class StdSort {
+class NativeQsort {
  public:
   enum COMPARE_TYPE {
     LESS,
@@ -56,6 +56,7 @@ class StdSort {
     if (compare_type == COMPARE_TYPE::LESS) {
       qsort(&(*first), num, sizeof(int), [](const void *a, const void *b){ return *reinterpret_cast<const int*>(a) - *reinterpret_cast<const int*>(b); });
     } else if (compare_type == COMPARE_TYPE::QUICKSORT_KILLER) {
+      gQuicksortKillerCompare = decltype(gQuicksortKillerCompare)();  // Reset maps populated by the last run.
       qsort(&(*first), num, sizeof(int), [](const void *a, const void *b){ return gQuicksortKillerCompare(*reinterpret_cast<const int*>(a), *reinterpret_cast<const int*>(b)); });
     } else {
       abort();
@@ -104,10 +105,10 @@ class QuicksortKillerInitializer {
   }
 
   template<typename RandomAccessIterator>
-  void operator()(RandomAccessIterator first, RandomAccessIterator last, StdSort sorter) {
+  void operator()(RandomAccessIterator first, RandomAccessIterator last, NativeQsort sorter) {
     std::iota(first, last, 0);
     using ElemType = typename std::iterator_traits<RandomAccessIterator>::value_type;
-    sorter(first, last, StdSort::COMPARE_TYPE::QUICKSORT_KILLER);
+    sorter(first, last, NativeQsort::COMPARE_TYPE::QUICKSORT_KILLER);
   }
 
   std::string getName() const {
@@ -140,14 +141,14 @@ void profile(ArrayInitializer initializer, ArraySorter sorter, const int array_s
 
 int main(int argc, char *argv[]) {
   /*
-  profile(RandomInitializer(), StdSort(), 100);
-  profile(RandomInitializer(), StdSort(), 1000);
-  profile(RandomInitializer(), StdSort(), 10000);
-  profile(RandomInitializer(), StdSort(), 100000);
-  profile(QuicksortKillerInitializer(), StdSort(), 100);
-  profile(QuicksortKillerInitializer(), StdSort(), 1000);
-  profile(QuicksortKillerInitializer(), StdSort(), 10000);
-  profile(QuicksortKillerInitializer(), StdSort(), 100000);
+  profile(RandomInitializer(), NativeQsort(), 100);
+  profile(RandomInitializer(), NativeQsort(), 1000);
+  profile(RandomInitializer(), NativeQsort(), 10000);
+  profile(RandomInitializer(), NativeQsort(), 100000);
+  profile(QuicksortKillerInitializer(), NativeQsort(), 100);
+  profile(QuicksortKillerInitializer(), NativeQsort(), 1000);
+  profile(QuicksortKillerInitializer(), NativeQsort(), 10000);
+  profile(QuicksortKillerInitializer(), NativeQsort(), 100000);
   */
   profile(RandomInitializer(), BfprtQsort(), 100);
   profile(RandomInitializer(), BfprtQsort(), 1000);
