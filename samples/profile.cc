@@ -10,6 +10,36 @@
 
 #include "bfprt_qsort.hpp"
 
+template<typename T>
+class QuicksortKillerCompare {
+  std::map<int, int> keys;
+  int candidate = 0;
+
+  public:
+  bool operator()(const T &x, const T &y) {
+    if (!keys.count(x) && !keys.count(y)) {
+      if (x == candidate) {
+        keys[x] = keys.size();
+      } else {
+        keys[y] = keys.size();
+      }
+    }
+
+    bool ret;
+    if (!keys.count(x)) {
+      candidate = x;
+      ret = true;
+    } else if (!keys.count(y)) {
+      candidate = y;
+      ret = false;
+    } else {
+      ret = (keys[x] >= keys[y]);
+    }
+
+    return ret;
+  }
+};
+
 class RandomInitializer {
  public:
   template<typename ArraySorter, typename RandomAccessIterator>
@@ -26,36 +56,6 @@ class RandomInitializer {
 };
 
 class QuicksortKillerInitializer {
-  template<typename T>
-  class QuicksortKillerCompare {
-    std::map<int, int> keys;
-    int candidate = 0;
-
-   public:
-    bool operator()(const T &x, const T &y) {
-      if (!keys.count(x) && !keys.count(y)) {
-        if (x == candidate) {
-          keys[x] = keys.size();
-        } else {
-          keys[y] = keys.size();
-        }
-      }
-
-      bool ret;
-      if (!keys.count(x)) {
-        candidate = x;
-        ret = true;
-      } else if (!keys.count(y)) {
-        candidate = y;
-        ret = false;
-      } else {
-        ret = (keys[x] >= keys[y]);
-      }
-
-      return ret;
-    }
-  };
-
  public:
   template<typename ArraySorter, typename RandomAccessIterator>
   void operator()(RandomAccessIterator first, RandomAccessIterator last, ArraySorter sorter) {
@@ -96,11 +96,13 @@ class BfprtQsort {
 template<typename ArraySorter, typename ArrayInitializer>
 void profile(ArrayInitializer initializer, ArraySorter sorter, const int array_size, const int iterations=100) {
   std::vector<double> elapsed_times;
-  std::vector<int> array(array_size);
+  std::vector<int> init_array(array_size);
+
+  initializer(init_array.begin(), init_array.end(), sorter);
 
   for (int i = 0; i < iterations; ++i) {
     // Initialize the array before starting the timer not to include the initialization time to the profiling results.
-    initializer(array.begin(), array.end(), sorter);
+    auto array = init_array;
 
     const auto start_time = std::chrono::steady_clock::now();
     sorter(array.begin(), array.end());
@@ -115,6 +117,7 @@ void profile(ArrayInitializer initializer, ArraySorter sorter, const int array_s
 }
 
 int main(int argc, char *argv[]) {
+  /*
   profile(RandomInitializer(), StdSort(), 100);
   profile(RandomInitializer(), StdSort(), 1000);
   profile(RandomInitializer(), StdSort(), 10000);
@@ -123,10 +126,15 @@ int main(int argc, char *argv[]) {
   profile(QuicksortKillerInitializer(), StdSort(), 1000);
   profile(QuicksortKillerInitializer(), StdSort(), 10000);
   profile(QuicksortKillerInitializer(), StdSort(), 100000);
+  */
   profile(RandomInitializer(), BfprtQsort(), 100);
   profile(RandomInitializer(), BfprtQsort(), 1000);
   profile(RandomInitializer(), BfprtQsort(), 10000);
   profile(RandomInitializer(), BfprtQsort(), 100000);
+  profile(QuicksortKillerInitializer(), BfprtQsort(), 100);
+  profile(QuicksortKillerInitializer(), BfprtQsort(), 1000);
+  profile(QuicksortKillerInitializer(), BfprtQsort(), 10000);
+  profile(QuicksortKillerInitializer(), BfprtQsort(), 100000);
 
   return 0;
 }
