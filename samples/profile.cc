@@ -40,40 +40,26 @@ class QuicksortKillerCompare {
   }
 };
 
-class RandomInitializer {
- public:
-  template<typename ArraySorter, typename RandomAccessIterator>
-  void operator()(RandomAccessIterator first, RandomAccessIterator last, ArraySorter sorter) {
-    std::mt19937 mt(1234);  // Use a fixed seed for reproducibility.
-    std::uniform_int_distribution<> rand_int(std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
-
-    std::generate(first, last, [&mt, &rand_int]{ return rand_int(mt); });
-  }
-
-  std::string getName() const {
-    return "random";
-  }
-};
-
-class QuicksortKillerInitializer {
- public:
-  template<typename ArraySorter, typename RandomAccessIterator>
-  void operator()(RandomAccessIterator first, RandomAccessIterator last, ArraySorter sorter) {
-    std::iota(first, last, 0);
-    using ElemType = typename std::iterator_traits<RandomAccessIterator>::value_type;
-    sorter(first, last, QuicksortKillerCompare<ElemType>());
-  }
-
-  std::string getName() const {
-    return "random";
-  }
-};
+QuicksortKillerCompare<int> gQuicksortKillerCompare;
 
 class StdSort {
  public:
+  enum COMPARE_TYPE {
+    LESS,
+    QUICKSORT_KILLER
+  };
+
   template<typename RandomAccessIterator, typename Compare = std::less<typename std::iterator_traits<RandomAccessIterator>::value_type> >
-  void operator()(RandomAccessIterator first, RandomAccessIterator last, Compare comp = Compare()) {
-    std::sort(first, last, comp);
+  void operator()(RandomAccessIterator first, RandomAccessIterator last, COMPARE_TYPE compare_type = COMPARE_TYPE::LESS) {
+    int num = std::distance(first, last);
+
+    if (compare_type == COMPARE_TYPE::LESS) {
+      qsort(&(*first), num, sizeof(int), [](const void *a, const void *b){ return *reinterpret_cast<const int*>(a) - *reinterpret_cast<const int*>(b); });
+    } else if (compare_type == COMPARE_TYPE::QUICKSORT_KILLER) {
+      qsort(&(*first), num, sizeof(int), [](const void *a, const void *b){ return gQuicksortKillerCompare(*reinterpret_cast<const int*>(a), *reinterpret_cast<const int*>(b)); });
+    } else {
+      abort();
+    }
   }
 
   std::string getName() const {
@@ -90,6 +76,42 @@ class BfprtQsort {
 
   std::string getName() const {
     return "bfprtQsort";
+  }
+};
+
+class RandomInitializer {
+ public:
+  template<typename RandomAccessIterator, typename ArraySorter>
+  void operator()(RandomAccessIterator first, RandomAccessIterator last, ArraySorter sorter) {
+    std::mt19937 mt(1234);  // Use a fixed seed for reproducibility.
+    std::uniform_int_distribution<> rand_int(std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+
+    std::generate(first, last, [&mt, &rand_int]{ return rand_int(mt); });
+  }
+
+  std::string getName() const {
+    return "random";
+  }
+};
+
+class QuicksortKillerInitializer {
+ public:
+  template<typename RandomAccessIterator, typename ArraySorter>
+  void operator()(RandomAccessIterator first, RandomAccessIterator last, ArraySorter sorter) {
+    std::iota(first, last, 0);
+    using ElemType = typename std::iterator_traits<RandomAccessIterator>::value_type;
+    sorter(first, last, QuicksortKillerCompare<ElemType>());
+  }
+
+  template<typename RandomAccessIterator>
+  void operator()(RandomAccessIterator first, RandomAccessIterator last, StdSort sorter) {
+    std::iota(first, last, 0);
+    using ElemType = typename std::iterator_traits<RandomAccessIterator>::value_type;
+    sorter(first, last, StdSort::COMPARE_TYPE::QUICKSORT_KILLER);
+  }
+
+  std::string getName() const {
+    return "quicksort_killer";
   }
 };
 
