@@ -24,30 +24,42 @@ class RandomInitializer {
   }
 };
 
-class LibcQsort {
+class QuicksortKillerInitializer {
  public:
-  template<typename RandomAccessIterator>
-  void operator()(RandomAccessIterator first, RandomAccessIterator last) {
-    int num = std::distance(first, last);
-    qsort(&(*first), num, sizeof(int), [](const void *a, const void *b){ return *reinterpret_cast<const int*>(a) - *reinterpret_cast<const int*>(b); });
+  template<typename ArraySorter, typename RandomAccessIterator>
+  void operator()(ArraySorter sorter, RandomAccessIterator first, RandomAccessIterator last) {
+    std::mt19937 mt(1234);  // Use a fixed seed for reproducibility.
+    std::uniform_int_distribution<> rand_int(std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+
+    std::generate(first, last, [&mt, &rand_int]{ return rand_int(mt); });
   }
 
   std::string getName() const {
-    return "libc_qsort";
+    return "random";
+  }
+};
+
+class StdSort {
+ public:
+  template<typename RandomAccessIterator, typename Compare = std::less<typename std::iterator_traits<RandomAccessIterator>::value_type> >
+  void operator()(RandomAccessIterator first, RandomAccessIterator last, Compare comp = Compare()) {
+    std::sort(first, last, comp);
+  }
+
+  std::string getName() const {
+    return "std::sort";
   }
 };
 
 class BfprtQsort {
  public:
-  template<typename RandomAccessIterator>
-  void operator()(RandomAccessIterator first, RandomAccessIterator last) {
-    int num = std::distance(first, last);
-    using ElemType = typename std::iterator_traits<RandomAccessIterator>::value_type;
-    sorting::bfprtQsort(first, last, std::less<ElemType>());
+  template<typename RandomAccessIterator, typename Compare = std::less<typename std::iterator_traits<RandomAccessIterator>::value_type> >
+  void operator()(RandomAccessIterator first, RandomAccessIterator last, Compare comp = Compare()) {
+    sorting::bfprtQsort(first, last, comp);
   }
 
   std::string getName() const {
-    return "bfprt_qsort";
+    return "bfprtQsort";
   }
 };
 
@@ -73,10 +85,10 @@ void profile(ArrayInitializer initializer, ArraySorter sorter, const int array_s
 }
 
 int main(int argc, char *argv[]) {
-  profile(RandomInitializer(), LibcQsort(), 100);
-  profile(RandomInitializer(), LibcQsort(), 1000);
-  profile(RandomInitializer(), LibcQsort(), 10000);
-  profile(RandomInitializer(), LibcQsort(), 100000);
+  profile(RandomInitializer(), StdSort(), 100);
+  profile(RandomInitializer(), StdSort(), 1000);
+  profile(RandomInitializer(), StdSort(), 10000);
+  profile(RandomInitializer(), StdSort(), 100000);
   profile(RandomInitializer(), BfprtQsort(), 100);
   profile(RandomInitializer(), BfprtQsort(), 1000);
   profile(RandomInitializer(), BfprtQsort(), 10000);
